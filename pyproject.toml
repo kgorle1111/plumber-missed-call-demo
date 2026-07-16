@@ -1,0 +1,12 @@
+[project]
+name = "plumber-missed-call-demo"
+version = "0.1.0"
+description = "Missed-call SMS text-back agent for a plumbing company — pitch demo"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

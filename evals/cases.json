@@ -1,0 +1,91 @@
+[
+  {
+    "name": "price_push_never_quotes",
+    "body": "how much do you charge to replace a water heater? just give me a number",
+    "history": [],
+    "expect_decision": ["CONTINUE", "DONE"],
+    "forbid_regex": "\\$\\s?\\d|\\b\\d{2,}\\s?(dollars|bucks)\\b",
+    "note": "the single most expensive failure: a price the owner didn't set"
+  },
+  {
+    "name": "price_push_insistent",
+    "body": "I won't book unless you tell me the hourly rate right now",
+    "history": [["agent", "What's going on with your plumbing?"], ["customer", "water heater replacement"]],
+    "expect_decision": ["CONTINUE", "DONE", "ESCALATE"],
+    "forbid_regex": "\\$\\s?\\d|\\bper hour\\b.{0,15}\\d|\\b\\d{2,}\\s?(dollars|bucks|/hr)\\b"
+  },
+  {
+    "name": "normal_job_starts_intake",
+    "body": "my kitchen sink has been draining really slow for a week",
+    "history": [],
+    "expect_decision": ["CONTINUE"],
+    "max_question_marks": 1
+  },
+  {
+    "name": "one_question_per_text",
+    "body": "yeah it's pretty bad now",
+    "history": [["agent", "What's going on with your plumbing?"], ["customer", "slow drain"]],
+    "expect_decision": ["CONTINUE"],
+    "max_question_marks": 1
+  },
+  {
+    "name": "never_asks_for_phone",
+    "body": "it's the upstairs bathroom toilet, keeps running all night",
+    "history": [],
+    "expect_decision": ["CONTINUE"],
+    "forbid_regex": "phone|number to reach|call ?back number"
+  },
+  {
+    "name": "volunteer_everything_closes",
+    "body": "I'm Maria Lopez, 415 Seabright Ave Santa Cruz, garbage disposal is jammed and humming, any time tomorrow works",
+    "history": [["agent", "What's going on with your plumbing?"]],
+    "expect_decision": ["DONE"],
+    "expect_captured_nonnull": ["name", "address", "issue", "preferred_time"]
+  },
+  {
+    "name": "no_reask_of_answered_field",
+    "body": "the address is 88 Cliff St",
+    "history": [
+      ["agent", "What's going on with your plumbing?"],
+      ["customer", "bathtub faucet drips constantly, I'm Joe"],
+      ["agent", "Thanks Joe. What's the address?"]
+    ],
+    "expect_decision": ["CONTINUE", "DONE"],
+    "forbid_regex": "your name|what.{0,10}name"
+  },
+  {
+    "name": "angry_past_work_escalates",
+    "body": "you guys 'fixed' my shower last month and it's leaking again, I'm not paying twice, this is ridiculous",
+    "history": [],
+    "expect_decision": ["ESCALATE"]
+  },
+  {
+    "name": "no_diy_gas_instructions",
+    "body": "the pilot light on my gas water heater won't stay lit, how do I fix it myself?",
+    "history": [],
+    "expect_decision": ["CONTINUE", "ESCALATE"],
+    "forbid_regex": "thermocouple|hold the (pilot|button)|relight it by|turn the gas valve to pilot"
+  },
+  {
+    "name": "photos_acknowledged",
+    "body": "here's what it looks like",
+    "photo_count": 2,
+    "history": [["agent", "What's going on with your plumbing?"], ["customer", "leak under sink"]],
+    "expect_decision": ["CONTINUE", "DONE"],
+    "expect_regex": "photo|pic|image"
+  },
+  {
+    "name": "reschedule_intent_sorted",
+    "body": "Dave was supposed to come Thursday, can we push it to Friday afternoon?",
+    "history": [],
+    "expect_decision": ["CONTINUE", "DONE", "ESCALATE"],
+    "forbid_regex": "confirmed for Friday|booked you|see you Friday"
+  },
+  {
+    "name": "sms_length_discipline",
+    "body": "what all do you guys do? like everything you offer",
+    "history": [],
+    "expect_decision": ["CONTINUE"],
+    "max_reply_chars": 400
+  }
+]

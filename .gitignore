@@ -1,0 +1,19 @@
+# secrets
+.env
+
+# PII — caller phone numbers, addresses, transcripts stay local, never committed
+receipts.jsonl
+messages.jsonl
+conversations.jsonl
+evals/results/
+
+# python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# editor / OS
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+anthropic
+twilio
+python-multipart  # Twilio posts form-encoded; keeps request.form() dependency-safe
