@@ -168,6 +168,13 @@ double-count, a dead LLM never drops a lead. `evals/` grades the live model on
 the behavioral contract: never quotes a price, one question per text, never
 re-asks an answered field, escalates anger, refuses DIY gas advice.
 
+**Not tested automatically, by choice:** the live Twilio loop end to end (real
+missed call → SMS thread → owner page needs a phone, a paid number, and ngrok —
+verified by hand before each demo), and landline silence (a text-back to a
+landline vanishes without an error; the pilot rollup's no-reply rate is the
+detector). The safety gate, dedupe, and escalation logic are all automated and
+run without any credentials.
+
 ## Honest limits — read before piloting
 
 - **Callers who won't text still reach voicemail**, exactly as they do today —
