@@ -19,16 +19,55 @@ Security
 """
 import json
 import os
+from urllib.parse import urlsplit
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 
 from app import agent, notify, receipt, state
 
 load_dotenv()
 
 app = FastAPI(title="plumber-missed-call-demo")
+
+# --- localhost guard -------------------------------------------------------
+# Rejects requests whose Host or Origin isn't local. The Host check stops DNS
+# rebinding (evil.com resolving to 127.0.0.1 arrives with Host: evil.com); the
+# Origin check stops cross-origin browser POSTs — multipart/form bodies skip
+# CORS preflight, so without it any webpage the operator visits could fire
+# uploads that spend real API money. curl/httpx send no Origin and pass.
+# "testserver" is starlette's TestClient default host.
+_LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1", "testserver"}
+
+
+def _guard_hostname(value: str) -> str:
+    if "//" not in value:
+        value = "//" + value
+    return urlsplit(value).hostname or ""
+
+
+def _allowed_hosts() -> set[str]:
+    """PUBLIC_BASE_URL (the ngrok tunnel Twilio posts through) is read per
+    request — it changes every ngrok restart and .env reloads on relaunch."""
+    hosts = set(_LOCAL_HOSTS)
+    base = os.getenv("PUBLIC_BASE_URL")
+    if base:
+        hosts.add(_guard_hostname(base))
+    return hosts
+
+
+@app.middleware("http")
+async def localhost_guard(request: Request, call_next):
+    if _guard_hostname(request.headers.get("host", "")) not in _allowed_hosts():
+        return JSONResponse(
+            {"detail": "unrecognized Host header — this server only answers as localhost"}, status_code=403
+        )
+    origin = request.headers.get("origin")
+    if origin and _guard_hostname(origin) not in _allowed_hosts():
+        return JSONResponse({"detail": "cross-origin requests are not accepted"}, status_code=403)
+    return await call_next(request)
+
 
 BUSINESS_NAME = os.getenv("BUSINESS_NAME", "Harbor Plumbing (demo)")
 OWNER_NAME = os.getenv("OWNER_NAME", "Dave")
