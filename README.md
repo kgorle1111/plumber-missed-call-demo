@@ -167,3 +167,20 @@ key, malformed model replies re-ask instead of paging the owner, receipts don't
 double-count, a dead LLM never drops a lead. `evals/` grades the live model on
 the behavioral contract: never quotes a price, one question per text, never
 re-asks an answered field, escalates anger, refuses DIY gas advice.
+
+## Honest limits — read before piloting
+
+- **Callers who won't text still reach voicemail**, exactly as they do today —
+  a real segment for plumbing (older customers especially). The pilot rollup
+  measures the reply rate; if it's low, the voice-agent build is the upgrade.
+- **It never quotes a price.** The one thing customers ask most is the one
+  thing it must never answer — price questions escalate to the owner.
+- **Gas leak / CO texts get a verbatim safety line** ("leave now, 911 / PG&E")
+  from a 0 ms deterministic guard, never from the model. False-positive cost:
+  an over-cautious reply to "gas water heater" appliance jobs. Tuned and
+  pinned in tests.
+- **A restart mid-conversation re-asks one question.** State is in-memory with
+  a JSONL audit trail; the ~$0.04-per-number turn cap bounds spam and jailbreak
+  token burn without rate-limit infrastructure.
+
+Full engineering rationale for every cut: [TRADEOFFS.md](TRADEOFFS.md).
