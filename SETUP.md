@@ -6,6 +6,14 @@
 
 ## 1. Local
 
+One command:
+
+```bash
+./install.sh   # venv + deps + .env scaffold + environment verification
+```
+
+Or manually:
+
 ```bash
 uv venv && source .venv/bin/activate
 uv pip install -r requirements-dev.txt
