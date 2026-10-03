@@ -166,7 +166,6 @@ def _llm_decide(body, history, photo_count):
     resp = _client().messages.create(
         model=MODEL,
         max_tokens=400,
-        temperature=0.2,
         system=[{"type": "text", "text": SYSTEM_PROMPT,
                  "cache_control": {"type": "ephemeral"}}],
         messages=[{"role": "user", "content": build_messages(body, history, photo_count)}],
