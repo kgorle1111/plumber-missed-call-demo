@@ -98,6 +98,25 @@ class TestDecide:
         with pytest.raises(RuntimeError, match="ANTHROPIC_API_KEY"):
             agent.decide("kitchen sink clogged")
 
+    def test_llm_call_only_uses_arguments_the_installed_sdk_accepts(self, monkeypatch):
+        # Newer anthropic SDKs dropped `temperature`; every AI turn then raised and escalated.
+        import inspect
+        from types import SimpleNamespace as NS
+
+        import anthropic
+
+        accepted = set(inspect.signature(anthropic.Anthropic(api_key="x").messages.create).parameters)
+        sent = {}
+
+        def fake_create(**kw):
+            sent.update(kw)
+            return NS(content=[NS(text='{"decision":"CONTINUE","reply_text":"What is going on?"}')])
+
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        monkeypatch.setattr(agent, "_client", lambda: NS(messages=NS(create=fake_create)))
+        agent.decide("kitchen sink clogged")
+        assert set(sent) <= accepted, f"unsupported arguments: {set(sent) - accepted}"
+
 
 class TestPromptContract:
     def test_hard_boundaries_present(self):
