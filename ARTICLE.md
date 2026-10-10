@@ -1,3 +1,8 @@
+> **Correction (October 2026), added after an independent audit; the original text below is unchanged:**
+> - The gas/CO gate is deterministic, but it is **not** "100% reliable": it only matches the phrasings its regex knows. In a 2026 check it missed 10 of 18 realistic texts (e.g. "rotten egg smell", "it reeks of gas", "carbon-monoxide alarm").
+> - "A weird reply but never an action" was false until the TwiML escaping fix (PR #2): an attacker-steered reply could inject a `<Redirect>`. Every string written into TwiML is now XML-escaped, with tests.
+> - The suite is now 64 hermetic tests, not 56. Price/arrival/DIY limits are enforced by the prompt and evals, not by code.
+
 # I built an AI agent for plumbers. Then a plumber's office manager taught me a $279/month lesson.
 
 *Kannishk Naidu, July 2026*
