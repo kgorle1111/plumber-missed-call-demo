@@ -2,6 +2,7 @@
 no keys, no network), signature enforcement, retries, turn cap, and the AI-down
 fallback. These are the paths a live pilot exercises on day one."""
 import json
+import xml.etree.ElementTree as ET
 
 import pytest
 from fastapi.testclient import TestClient
@@ -96,6 +97,29 @@ class TestSmsTurn:
             _sms(f"msg {i}", sid=f"SM_CAP_{i}")
         r = _sms("one too many", sid="SM_CAP_LAST")
         assert main.TURN_CAP_SMS in r.text
+
+
+class TestTwimlEscaping:
+    """reply_text is LLM output shaped by an attacker's SMS; env strings are operator
+    typos waiting to happen. Anything interpolated into TwiML must stay a text node."""
+
+    def test_reply_cannot_inject_twiml_verbs(self, monkeypatch, decision):
+        evil = "ok</Message><Redirect>http://evil</Redirect><Message>hi"
+        monkeypatch.setattr(agent, "decide", lambda *a, **k: decision(reply_text=evil))
+        root = ET.fromstring(_sms("anything").text)
+        assert len(root.findall("Message")) == 1
+        assert root.find(".//Redirect") is None
+        assert root.find("Message").text == evil  # delivered verbatim, as text
+
+    def test_business_name_with_ampersand_is_well_formed(self, monkeypatch):
+        monkeypatch.setattr(main, "MISSED_SAY", "Thanks for calling Smith & Sons <Plumbing>.")
+        root = ET.fromstring(client.post("/voice", data={"From": "+18315550103"}).text)
+        assert root.find("Say").text == "Thanks for calling Smith & Sons <Plumbing>."
+
+    def test_forward_number_is_escaped(self, monkeypatch):
+        monkeypatch.setenv("OWNER_FORWARD_NUMBER", "+1831&<5550199>")
+        root = ET.fromstring(client.post("/voice", data={"From": "+18315550104"}).text)
+        assert root.find("Dial").text == "+1831&<5550199>"
 
 
 class TestDashboard:

@@ -20,6 +20,7 @@ Security
 import json
 import os
 from urllib.parse import urlsplit
+from xml.sax.saxutils import escape
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request, Response
@@ -88,12 +89,13 @@ def _twiml(body: str) -> Response:
 
 
 def _say_and_hangup() -> Response:
-    return _twiml(f"<Response><Say>{MISSED_SAY}</Say><Hangup/></Response>")
+    return _twiml(f"<Response><Say>{escape(MISSED_SAY)}</Say><Hangup/></Response>")
 
 
 def _reply_sms(text: str) -> Response:
-    # &-escape is enough here: reply_text never legitimately contains < or >.
-    return _twiml(f"<Response><Message>{text.replace('&', '&amp;')}</Message></Response>")
+    # text is LLM output steered by an untrusted SMS — unescaped, a reply containing
+    # "</Message><Redirect>" would become live TwiML verbs.
+    return _twiml(f"<Response><Message>{escape(text)}</Message></Response>")
 
 
 async def _form(request: Request) -> dict:
@@ -220,7 +222,7 @@ async def voice(request: Request):
         return Response(status_code=403)
     forward = os.getenv("OWNER_FORWARD_NUMBER")
     if forward:
-        return _twiml(f'<Response><Dial timeout="20" action="/missed">{forward}</Dial></Response>')
+        return _twiml(f'<Response><Dial timeout="20" action="/missed">{escape(forward)}</Dial></Response>')
     _fire_textback(form.get("From", ""))
     return _say_and_hangup()
 
